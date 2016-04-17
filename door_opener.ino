@@ -9,10 +9,10 @@
  * TODO:
  * - compare card id's to known list
  * - actuator control
- * - LED control
 */
 /******************************************************************************************/
 
+#include "FastLED.h"
 #include <Wire.h>
 #include <Adafruit_PN532.h>
 
@@ -20,12 +20,23 @@
 #define PN532_RESET (3)  // Not connected by default on the NFC Shield
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
+#define NUM_LEDS    1
+#define DATA_PIN    11
+#define CLOCK_PIN   13
+#define CHIPSET     WS2801
+#define COLOR_ORDER RGB
+
+CRGB leds[NUM_LEDS];
+
 void setup() {
-    nfc.begin();
-    uint32_t versiondata = nfc.getFirmwareVersion();
-    if (! versiondata) {
-      //Didn't find PN53x board. halt.
-      while (1);
+  FastLED.addLeds<CHIPSET, DATA_PIN, CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.setBrightness(150);
+  nfc.begin();
+  uint32_t versiondata = nfc.getFirmwareVersion();
+  if (! versiondata) {
+    //Didn't find PN53x board. halt.
+    while (1)
+      blinkOpen();
   }
   // configure board to read RFID tags
   nfc.SAMConfig();
@@ -53,3 +64,11 @@ void loop() {
       //TODO check cardid!
     }
 }
+
+void blinkOpen(){
+  for(int i=0; i < 8; i++){
+    leds[0] = CRGB::Red; FastLED.show(); delay(250);
+    leds[0] = CRGB(50,180,0); FastLED.show(); delay(250);
+  }
+}
+

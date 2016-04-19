@@ -30,7 +30,7 @@ CRGB leds[NUM_LEDS];
 
 void setup() {
   FastLED.addLeds<CHIPSET, DATA_PIN, CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.setBrightness(150);
+  FastLED.setBrightness(50);
   nfc.begin();
   uint32_t versiondata = nfc.getFirmwareVersion();
   if (! versiondata) {
@@ -40,9 +40,17 @@ void setup() {
   }
   // configure board to read RFID tags
   nfc.SAMConfig();
+  pinMode(7, INPUT_PULLUP);//The door sensor is wired between GND and 7.
 }
 
 void loop() {
+  if(digitalRead(7)){//if the door is open, just blink "open" and don't do anything else
+    blinkOpen();
+    return;
+  }
+  leds[0] = CRGB::Red;
+  FastLED.show();
+
   uint8_t success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
   uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
@@ -66,9 +74,7 @@ void loop() {
 }
 
 void blinkOpen(){
-  for(int i=0; i < 8; i++){
     leds[0] = CRGB::Red; FastLED.show(); delay(250);
-    leds[0] = CRGB(50,180,0); FastLED.show(); delay(250);
-  }
+    leds[0] = CRGB(150,255,0); FastLED.show(); delay(250);
 }
 
